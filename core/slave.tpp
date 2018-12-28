@@ -111,17 +111,10 @@ template <class TaskT,  class AggregatorT>
 bool Slave<TaskT, AggregatorT>::wait_to_start()
 {
 	MSG cmd = slave_bcastCMD();
-	if(cmd == START){
-		// TODO(mintyi): add collect communicate hostnames, tcp_port, rdma_port here if USE_RDMA==true;
-		if(USE_RDMA){
-			vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
-			all_to_all(infos);
-			extern vector<RdmaNodeInfo> _global_rdma_infos;
-			_global_rdma_infos = std::move(infos);
-		}
-		return true;
+	if(cmd != START){
+		return false;
 	}
-	return false;
+	return true;
 }
 
 template <class TaskT,  class AggregatorT>
@@ -614,7 +607,9 @@ void Slave<TaskT, AggregatorT>::run(const WorkerParams& params)
 		cout << _my_rank << "=> Error: Failed in parse input data." << endl;
 		return;
 	}
-
+	// TODO(mintyi): better method to decide thread number
+	init_worker_rdma(7); 
+	
 	//================ Load graph from HDFS =================
 	init_timers();
 	ResetTimer(WORKER_TIMER);

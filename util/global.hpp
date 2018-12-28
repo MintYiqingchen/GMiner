@@ -257,7 +257,4 @@ extern int RDMA_PORT;
 extern string _hostname;
 extern string _ibname;
 extern vector<RdmaNodeInfo> _global_rdma_infos;
-
-
-
 #endif /* GLOBAL_HPP_ */

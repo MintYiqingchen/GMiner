@@ -47,20 +47,8 @@ bool all_land(bool my_copy)
 }
 
 //============================================
-void pregel_send(void* buf, int size, int dst, int tag)
-{
-	MPI_Send(buf, size, MPI_CHAR, dst, tag, MPI_COMM_WORLD);
-}
-
-int pregel_recv(void* buf, int size, int src, int tag) //return the actual source, since "src" can be MPI_ANY_SOURCE
-{
-	MPI_Status status;
-	MPI_Recv(buf, size, MPI_CHAR, src, tag, MPI_COMM_WORLD, &status);
-	return status.MPI_SOURCE;
-}
-
-//============================================
-inline void send_ibinstream_nonblock(ibinstream& m, int dst, int tag, MPI_Request& request){
+void send_ibinstream_nonblock(ibinstream& m, int dst, int tag, MPI_Request& request){
+	
 	MPI_Isend(m.get_buf(), m.size(), MPI_CHAR, dst, tag, MPI_COMM_WORLD, &request);
 }
 
@@ -85,7 +73,7 @@ obinstream recv_obinstream_dynamic(int src, int tag){
     return obinstream(buf, (size_t)size);
 }
 
-inline obinstream recv_obinstream(int src, int tag)
+obinstream recv_obinstream(int src, int tag)
 {
 	return recv_obinstream_dynamic(src, tag);
 }

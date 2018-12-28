@@ -29,12 +29,6 @@ bool all_land(bool my_copy);
 
 //============================================
 
-void pregel_send(void* buf, int size, int dst, int tag = COMM_CHANNEL_200);
-
-int pregel_recv(void* buf, int size, int src, int tag = COMM_CHANNEL_200); //return the actual source, since "src" can be MPI_ANY_SOURCE
-
-//============================================
-
 void send_ibinstream(ibinstream& m, int dst, int tag = COMM_CHANNEL_200);
 
 obinstream recv_obinstream(int src, int tag = COMM_CHANNEL_200);
@@ -103,5 +97,4 @@ MSG slave_bcastCMD();
 //============================================
 
 #include "communication.tpp"
-
 #endif /* COMMUNICATION_HPP_ */

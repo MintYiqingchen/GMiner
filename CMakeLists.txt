@@ -5,6 +5,7 @@
 cmake_minimum_required(VERSION 3.3.0)
 project(GMINER)
 
+add_definitions(-DHAS_RDMA) # comment this line if don't have rdma device
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/release/)
 #set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/)
 
@@ -21,7 +22,7 @@ set(COMMON_LINK_LIBS "-lhdfs -lpthread") #-ljvm
 #set(MPI_INCLUDE_DIR "/data/opt/brew/include")
 #set(MPI_LIBRARY_DIR "/data/opt/brew/lib")
 
-add_definitions(-DUSE_HDFS2_)  #use hdfs v2.x.x by defalut
+add_definitions(-DUSE_HDFS2_)  #use hdfs v2.x.x by default
 set(HDFS_INCLUDE_DIR "/data/opt/hadoop-2.6.0/include/")
 set(HDFS_LIBRARY_DIR "/data/opt/hadoop-2.6.0/lib/native/")
 

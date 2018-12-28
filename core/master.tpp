@@ -75,16 +75,8 @@ template <class AggregatorT>
 void Master<AggregatorT>::start_to_work()
 {
 	master_bcastCMD(START);
-	if(USE_RDMA){
-		vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
-		all_to_all(infos);
-		extern vector<RdmaNodeInfo> _global_rdma_infos;
-		_global_rdma_infos = std::move(infos);
-		for(auto &info: _global_rdma_infos){
-			cout << info.hostname <<endl;	
-		}
-	}
 }
+
 
 template <class AggregatorT>
 void Master<AggregatorT>::terminate()
@@ -157,6 +149,10 @@ void Master<AggregatorT>::run(const WorkerParams& params)
 		return;
 	}
 	start_to_work();
+	init_worker_rdma(3);
+	for(auto &info: _global_rdma_infos){
+		cout << info.hostname <<endl;	
+	}
 	//============================================================
 
 	//===========================init=============================
