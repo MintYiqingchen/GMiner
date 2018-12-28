@@ -116,7 +116,8 @@ bool Slave<TaskT, AggregatorT>::wait_to_start()
 		if(USE_RDMA){
 			vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
 			all_to_all(infos);
-			_globale_rdma_infos = std::move(infos);
+			extern vector<RdmaNodeInfo> _global_rdma_infos;
+			_global_rdma_infos = std::move(infos);
 		}
 		return true;
 	}

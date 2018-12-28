@@ -23,7 +23,6 @@
 #include <mutex>
 
 #include "util/hdfs_core.hpp"
-#include "rdma.hpp"
 
 extern "C" {
 #include "util/iniparser/iniparser.h"
@@ -248,9 +247,10 @@ struct RdmaNodeInfo {
     int tcp_port;
     int rdma_port;
     RdmaNodeInfo() = default;
-    RdmaNodeInfo(string hname, string ib, int tcp_p, int rdma_port):
+    RdmaNodeInfo(string hname, string ib, int tcp_p, int rdma_p):
         hostname(hname), ibname(ib), tcp_port(tcp_p), rdma_port(rdma_p){}
 };
+
 extern bool USE_RDMA;
 extern int TCP_PORT;
 extern int RDMA_PORT;

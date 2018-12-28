@@ -38,6 +38,7 @@
 using namespace std;
 
 
+extern vector<RdmaNodeInfo> _global_rdma_infos;
 template <class TaskT,  class AggregatorT = DummyAgg> //user-defined types for vertexID, adjacency-list items
 class Slave
 {

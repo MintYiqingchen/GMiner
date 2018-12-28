@@ -22,8 +22,8 @@ void init_worker(int * argc, char*** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &_my_rank);
 	
 	int name_len;
-    char hostname[MPI_MAX_PROCESSOR_NAME];
-    MPI_Get_processor_name(hostname, &name_len);
+        char hostname[MPI_MAX_PROCESSOR_NAME];
+        MPI_Get_processor_name(hostname, &name_len);
 	_hostname = std::move(string(hostname));
 	_ibname = "ib" + static_cast<char>(_my_rank);
 }
@@ -236,6 +236,7 @@ int SLEEP_TIME=0;
 bool USE_RDMA = false;
 int TCP_PORT = -1;
 int RDMA_PORT = -1;
+vector<RdmaNodeInfo> _global_rdma_infos;
 
 void load_hdfs_config()
 {

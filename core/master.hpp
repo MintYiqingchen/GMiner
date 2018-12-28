@@ -24,6 +24,7 @@
 using namespace std;
 
 
+extern vector<RdmaNodeInfo> _global_rdma_infos;
 struct Progress
 {
 	unsigned long long memory_task_num;

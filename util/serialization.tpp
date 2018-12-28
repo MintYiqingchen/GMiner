@@ -174,10 +174,10 @@ ibinstream& operator<<(ibinstream& m, const hash_set<T, _HashFcn, _EqualKey>& v)
 
 ibinstream& operator<<(ibinstream& m, RdmaNodeInfo info){
 	map<string, string> infom{
-		("hostname", info.hostname),
-		("ibname", info.ibname),
-		("tcp_port", std::to_string(info.tcp_port)),
-		("rdma_port", std::to_string(info.rdma_port)) };
+		{"hostname", info.hostname},
+		{"ibname", info.ibname},
+		{"tcp_port", std::to_string(info.tcp_port)},
+		{"rdma_port", std::to_string(info.rdma_port)} };
 	return m << infom;
 }
 obinstream::obinstream() : buf_(NULL), size_(0), index_(0) {};
