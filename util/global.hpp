@@ -23,6 +23,7 @@
 #include <mutex>
 
 #include "util/hdfs_core.hpp"
+#include "rdma.hpp"
 
 extern "C" {
 #include "util/iniparser/iniparser.h"
@@ -231,7 +232,7 @@ extern int POP_NUM;
 extern int SUBG_SIZE_T;
 extern double LOCAL_RATE;
 
-// #of seconds for sleep in thread context_sync
+// # of seconds for sleep in thread context_sync
 extern int SLEEP_TIME;
 
 
@@ -239,6 +240,24 @@ void load_hdfs_config();
 void load_system_parameters(WorkerParams& param);
 
 //=====================================================================
+
+// # rdma related config and define
+struct RdmaNodeInfo {
+    string hostname;
+    string ibname;
+    int tcp_port;
+    int rdma_port;
+    RdmaNodeInfo() = default;
+    RdmaNodeInfo(string hname, string ib, int tcp_p, int rdma_port):
+        hostname(hname), ibname(ib), tcp_port(tcp_p), rdma_port(rdma_p){}
+};
+extern bool USE_RDMA;
+extern int TCP_PORT;
+extern int RDMA_PORT;
+extern string _hostname;
+extern string _ibname;
+extern vector<RdmaNodeInfo> _global_rdma_infos;
+
 
 
 #endif /* GLOBAL_HPP_ */

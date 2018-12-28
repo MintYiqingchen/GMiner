@@ -6,6 +6,8 @@
 
 int _my_rank;
 int _num_workers;
+string _hostname;
+string _ibname;
 
 void init_worker(int * argc, char*** argv)
 {
@@ -18,6 +20,12 @@ void init_worker(int * argc, char*** argv)
 	}
 	MPI_Comm_size(MPI_COMM_WORLD, &_num_workers);
 	MPI_Comm_rank(MPI_COMM_WORLD, &_my_rank);
+	
+	int name_len;
+    char hostname[MPI_MAX_PROCESSOR_NAME];
+    MPI_Get_processor_name(hostname, &name_len);
+	_hostname = std::move(string(hostname));
+	_ibname = "ib" + static_cast<char>(_my_rank);
 }
 
 void worker_finalize()
@@ -224,6 +232,10 @@ double LOCAL_RATE=0.5;
 // #of seconds for sleep in thread context_sync
 int SLEEP_TIME=0;
 
+// rdma setting
+bool USE_RDMA = false;
+int TCP_PORT = -1;
+int RDMA_PORT = -1;
 
 void load_hdfs_config()
 {
@@ -342,7 +354,15 @@ void load_system_parameters(WorkerParams& param)
 	val = iniparser_getint(ini, "SYNC:SLEEP_TIME", val_not_found);
 	if(val!=val_not_found) SLEEP_TIME=val;
 
-
+	// [RDMA]
+	USE_RDMA = iniparser_getboolean(ini, "RDMA:USE_RDMA", 0);
+	if (USE_RDMA){
+		TCP_PORT = iniparser_getint(ini, "RDMA:TCP_PORT", -1);
+		RDMA_PORT = iniparser_getint(ini, "RDMA:RDMA_PORT", -1);
+		if (TCP_PORT <= 0 || RDMA_PORT <= 0 || TCP_PORT == RDMA_PORT){
+			fprintf(stderr, "RDMA related ports (TCP_PORT and RDMA_PORT) are invalid .\n");
+		}
+	}
 	iniparser_freedict(ini);
 }
 

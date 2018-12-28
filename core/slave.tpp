@@ -111,8 +111,15 @@ template <class TaskT,  class AggregatorT>
 bool Slave<TaskT, AggregatorT>::wait_to_start()
 {
 	MSG cmd = slave_bcastCMD();
-	if(cmd == START)
+	if(cmd == START){
+		// TODO(mintyi): add collect communicate hostnames, tcp_port, rdma_port here if USE_RDMA==true;
+		if(USE_RDMA){
+			vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
+			all_to_all(infos);
+			_globale_rdma_infos = std::move(infos);
+		}
 		return true;
+	}
 	return false;
 }
 

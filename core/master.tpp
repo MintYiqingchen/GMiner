@@ -75,6 +75,12 @@ template <class AggregatorT>
 void Master<AggregatorT>::start_to_work()
 {
 	master_bcastCMD(START);
+	// TODO(mintyi): add collect communicate hostnames, tcp_port, rdma_port here if USE_RDMA==true;
+	if(USE_RDMA){
+		vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
+		all_to_all(infos);
+		_globale_rdma_infos = std::move(infos);
+	}
 }
 
 template <class AggregatorT>

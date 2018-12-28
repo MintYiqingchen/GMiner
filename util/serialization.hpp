@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "util/global.hpp"
-
 using namespace std;
 
 
@@ -44,6 +43,8 @@ ibinstream& operator<<(ibinstream& m, double i);
 ibinstream& operator<<(ibinstream& m, unsigned long long i);
 
 ibinstream& operator<<(ibinstream& m, char c);
+
+ibinstream& operator<<(ibinstream& m, RdmaNodeInfo info);
 
 template <class T>
 ibinstream& operator<<(ibinstream& m, const T* p);
@@ -113,6 +114,7 @@ obinstream& operator>>(obinstream& m, unsigned long long& i);
 
 obinstream& operator>>(obinstream& m, char& c);
 
+obinstream& operator>>(obinstream& m, RdmaNodeInfo& info);
 template <class T>
 obinstream& operator>>(obinstream& m, T*& p);
 
