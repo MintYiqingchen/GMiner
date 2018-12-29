@@ -369,14 +369,3 @@ void load_system_parameters(WorkerParams& param)
 
 //=====================================================================
 
-void init_worker_rdma(int threadnum){
-	if(USE_RDMA){
-		vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
-		all_to_all(infos);
-		_global_rdma_infos = std::move(infos);
-		// TODO(mintyi): how to set buffer size?
-		constexpr const int single_buf_sz_half = 5 * 1024 * 1024;
-        constexpr const int single_buf_sz = single_buf_sz_half * 2;
-		RDMA_init(single_buf_sz, threadnum);
-	}
-}

@@ -20,20 +20,19 @@
  *
  */
 
-#pragma once
-#pragma GCC diagnostic warning "-fpermissive"
+#ifndef RDMA_HPP_
+#define RDMA_HPP_
 
 #include <vector>
 #include <string>
 #include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
+#include "util/global.hpp"
 using namespace std;
 
 #ifdef HAS_RDMA
 
-// #include "utils/timer.hpp"
 #include "rdmalib/rdmaio.hpp"
-#include "util/global.hpp"
 
 using namespace rdmaio;
 
@@ -70,7 +69,7 @@ class RDMA {
 
 public:
     RDMA_Device *dev = NULL;
-    void* pd = NULL;
+    char* pd = NULL;
     uint64_t pd_size;
 
     void init_dev(uint64_t pds, int num_threads) {
@@ -87,6 +86,26 @@ public:
     }
 };
 
+void RDMA_init(uint64_t pd_size, int num_threads) {
+    // uint64_t t = timer::get_usec();
+
+    // init RDMA device
+    RDMA &rdma = RDMA::get_rdma();
+    rdma.init_dev(pd_size, num_threads);
+
+    // t = timer::get_usec() - t;
+    // cout << "INFO: initializing RMDA done (" << t / 1000  << " ms)" << endl;
+    cout << "INFO: initializing RMDA done" << endl;
+}
+
+#else
+
+void RDMA_init(uint64_t pd_size, int thread_num) {
+    std::cout << "This system is compiled without RDMA support." << std::endl;
+}
+
 #endif
 
-void RDMA_init();
+#include "util/rdma.tpp"
+#endif
+

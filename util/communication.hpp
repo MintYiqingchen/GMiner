@@ -12,6 +12,7 @@
 #include "util/global.hpp"
 #include "util/serialization.hpp"
 #include "util/timer.hpp"
+#include "util/rdma.hpp"
 
 //============================================
 
@@ -95,6 +96,17 @@ void master_bcastCMD(MSG cmd);
 MSG slave_bcastCMD();
 
 //============================================
+void init_worker_rdma(int threadnum){
+	if(USE_RDMA){
+		vector<RdmaNodeInfo> infos(_num_workers, RdmaNodeInfo(_hostname, _ibname, TCP_PORT, RDMA_PORT));
+		all_to_all(infos);
+		_global_rdma_infos = std::move(infos);
+		// TODO(mintyi): how to set buffer size?
+		constexpr const uint64_t single_buf_sz_half = 5 * 1024 * 1024;
+        constexpr const uint64_t single_buf_sz = single_buf_sz_half * 2;
+		RDMA_init(single_buf_sz, threadnum);
+	}
+}
 
 #include "communication.tpp"
 #endif /* COMMUNICATION_HPP_ */

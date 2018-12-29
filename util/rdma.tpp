@@ -19,20 +19,7 @@
  *      http://ipads.se.sjtu.edu.cn/projects/wukong
  *
  */
-#include "rdma.hpp"
 #ifdef HAS_RDMA
-void RDMA_init(uint64_t pd_size, int num_threads) {
-    // uint64_t t = timer::get_usec();
-
-    // init RDMA device
-    RDMA &rdma = RDMA::get_rdma();
-    rdma.init_dev(pd_size, num_threads);
-
-    // t = timer::get_usec() - t;
-    // cout << "INFO: initializing RMDA done (" << t / 1000  << " ms)" << endl;
-    cout << "INFO: initializing RMDA done" << endl;
-}
-
 // ===================== RDMA_Device ======================
 RDMA::RDMA_Device::RDMA_Device(int num_nodes, int num_threads, int nid, char *mem, uint64_t mem_sz, vector<RdmaNodeInfo> & node_infos) : num_threads_(num_threads){
     // record IPs of ndoes
@@ -40,7 +27,7 @@ RDMA::RDMA_Device::RDMA_Device(int num_nodes, int num_threads, int nid, char *me
     for(const auto & node: node_infos)
         ipset.push_back(node.ibname);
 
-    int rdma_port = node_infos.rdma_port;
+    int rdma_port = node_infos[nid].rdma_port;
     // initialization of new librdma
     // nid, ipset, port, thread_id-no use, enable single memory region
     ctrl = new RdmaCtrl(nid, ipset, rdma_port, true);
@@ -111,11 +98,6 @@ int RDMA::RDMA_Device::RdmaWriteSelective(int dst_tid, int dst_nid, char *local,
     // return rdmaOp(dst_tid, dst_nid, local, size, off, IBV_WR_RDMA_WRITE);
 }
 // =========================================================
-#else
-
-void RDMA_init() {
-    std::cout << "This system is compiled without RDMA support." << std::endl;
-}
 
 #endif
 
