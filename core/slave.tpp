@@ -368,7 +368,7 @@ void Slave<TaskT, AggregatorT>::pull_CMQ_to_CPQ()
 			 	RdmaMgr::Get().recv_obinstream(dsts[i], RESPOND_CHANNEL, um);
 			}
 			else{
-		        um = recv_obinstream(dsts[i], RESPOND_CHANNEL);
+		        um = move(recv_obinstream(dsts[i], RESPOND_CHANNEL));
             }
 			int num;
 			um >> num;

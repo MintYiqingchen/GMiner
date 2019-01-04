@@ -49,7 +49,9 @@ void Worker<Master, Slave, AggregatorT>::run(const WorkerParams& params)
 			threads.push_back(std::move(thread(client_connect_all_channel, i)));
 		}
 		for(auto & th: threads)
-			th.join();
+		 	th.join();
+        USE_RDMA = all_land(USE_RDMA);
+        cout << USE_RDMA;
 	}
 	if (_my_rank == MASTER_RANK)
 	{
