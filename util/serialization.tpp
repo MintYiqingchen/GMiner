@@ -175,12 +175,22 @@ ibinstream& operator<<(ibinstream& m, const hash_set<T, _HashFcn, _EqualKey>& v)
 ibinstream& operator<<(ibinstream& m, RdmaNodeInfo info){
 	map<string, string> infom{
 		{"hostname", info.hostname},
-		{"ibname", info.ibname},
-		{"tcp_port", std::to_string(info.tcp_port)},
 		{"rdma_port", std::to_string(info.rdma_port)} };
 	return m << infom;
 }
 obinstream::obinstream() : buf_(NULL), size_(0), index_(0) {};
+obinstream::obinstream(const obinstream& ob){
+    size_ = ob.size_;
+    index_ = ob.index_;
+    buf_ = new char[size_];
+    memcpy(buf_, ob.buf_, size_);
+}
+obinstream::obinstream(obinstream&& ob){
+    size_ = ob.size_;
+    index_ = ob.index_;
+    buf_ = ob.buf_;
+    ob.buf_ = NULL;
+}
 obinstream::obinstream(char* b, size_t s) : buf_(b), size_(s), index_(0) {};
 obinstream::obinstream(char* b, size_t s, size_t idx) : buf_(b), size_(s), index_(idx) {};
 obinstream::~obinstream()
@@ -395,8 +405,6 @@ obinstream& operator>>(obinstream& m, RdmaNodeInfo& info){
 	map<string, string> infom;
 	m >> infom;
 	info.hostname = infom["hostname"];
-	info.ibname = infom["ibname"];
-	info.tcp_port = stoi(infom["tcp_port"]);
 	info.rdma_port = stoi(infom["rdma_port"]);
 	return m;
 }

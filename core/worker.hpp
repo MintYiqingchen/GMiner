@@ -11,6 +11,7 @@
 
 #include "util/aggregator.hpp"
 #include "util/global.hpp"
+#include "util/rdma.hpp"
 
 #include "core/master.hpp"
 #include "core/slave.hpp"

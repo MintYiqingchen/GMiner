@@ -2,7 +2,6 @@
 //Authors: Hongzhi Chen, Miao Liu
 //Acknowledgements: this code is implemented by referencing pregel-mpi (https://code.google.com/p/pregel-mpi/) by Chuntao Hong.
 
-
 //============================================
 int all_sum(int my_copy)
 {
@@ -47,11 +46,9 @@ bool all_land(bool my_copy)
 }
 
 //============================================
-void send_ibinstream_nonblock(ibinstream& m, int dst, int tag, MPI_Request& request){
-	
+void send_ibinstream_nonblock(ibinstream& m, int dst, int tag, MPI_Request& request){	
 	MPI_Isend(m.get_buf(), m.size(), MPI_CHAR, dst, tag, MPI_COMM_WORLD, &request);
 }
-
 
 void send_ibinstream(ibinstream& m, int dst, int tag)
 {
@@ -70,12 +67,12 @@ obinstream recv_obinstream_dynamic(int src, int tag){
 
     char* buf = new char[size];
 	MPI_Mrecv((void*)buf, size, MPI_CHAR, &message, MPI_STATUS_IGNORE);
-    return obinstream(buf, (size_t)size);
+    return std::move(obinstream(buf, (size_t)size));
 }
 
 obinstream recv_obinstream(int src, int tag)
 {
-	return recv_obinstream_dynamic(src, tag);
+	return std::move(recv_obinstream_dynamic(src, tag));
 }
 
 //============================================

@@ -149,10 +149,6 @@ void Master<AggregatorT>::run(const WorkerParams& params)
 		return;
 	}
 	start_to_work();
-	init_worker_rdma(3);
-	for(auto &info: _global_rdma_infos){
-		cout << info.hostname <<endl;	
-	}
 	//============================================================
 
 	//===========================init=============================

@@ -243,18 +243,12 @@ void load_system_parameters(WorkerParams& param);
 // # rdma related config and define
 struct RdmaNodeInfo {
     string hostname;
-    string ibname;
-    int tcp_port;
     int rdma_port;
     RdmaNodeInfo() = default;
-    RdmaNodeInfo(string hname, string ib, int tcp_p, int rdma_p):
-        hostname(hname), ibname(ib), tcp_port(tcp_p), rdma_port(rdma_p){}
+    RdmaNodeInfo(string hname, int rdma_p):
+        hostname(hname), rdma_port(rdma_p){}
 };
 
 extern bool USE_RDMA;
-extern int TCP_PORT;
-extern int RDMA_PORT;
-extern string _hostname;
-extern string _ibname;
-extern vector<RdmaNodeInfo> _global_rdma_infos;
+extern int RDMA_PORT; // base port will change
 #endif /* GLOBAL_HPP_ */

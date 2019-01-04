@@ -991,7 +991,7 @@ public:
                                   malloc(sizeof(struct ibv_port_attr) * (port_count + 1));
         for (int port_id = 1; port_id <= port_count; port_id++) {
             rc = ibv_query_port (rdma_device->ctx, port_id, rdma_device->port_attrs + port_id);
-            //      CE_2(rc,"[librdma]: ibv_query_port on port %u failed\n",port_id);
+            // CE_2(rc,"[librdma]: ibv_query_port on port %u failed\n",port_id);
         }
 
         rdma_device->pd = ibv_alloc_pd(rdma_device->ctx);

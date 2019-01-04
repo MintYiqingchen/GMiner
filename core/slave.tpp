@@ -276,7 +276,6 @@ void Slave<TaskT, AggregatorT>::pull_PQ_to_CMQ()
 				to_pull[mIter->first] = worker_map[mIter->first];
 			}
 		}
-
 		if(cache_table_.size() > cache_size_)
 		{
 			//guarantee the cache is locked when checking
@@ -315,10 +314,17 @@ void Slave<TaskT, AggregatorT>::pull_PQ_to_CMQ()
 			int dst = (_my_rank + i) % _num_workers; //to avoid receiver-side bottleneck
 			if(dst != MASTER_RANK && requests[dst].size() > 0) //only send if there are requests //essentially, won't request to itself
 			{
-				streams.push(ibinstream());
-				mpi_requests.push(MPI_Request());
-				set_req(streams.back(), requests[dst]);
-				send_ibinstream_nonblock(streams.back(), dst, REQUEST_CHANNEL, mpi_requests.back());
+				if (USE_RDMA){
+					ibinstream *stream = new ibinstream(); // do not delete here!
+					set_req(*stream, requests[dst]);
+					RdmaMgr::Get().send(stream, dst, REQUEST_CHANNEL);
+				}
+				else{
+					streams.push(ibinstream());
+					mpi_requests.push(MPI_Request());
+					set_req(streams.back(), requests[dst]);
+					send_ibinstream_nonblock(streams.back(), dst, REQUEST_CHANNEL, mpi_requests.back());
+				}
 				dsts.push_back(dst);
 			}
 			if(mpi_requests.size() > 0){
@@ -357,7 +363,13 @@ void Slave<TaskT, AggregatorT>::pull_CMQ_to_CPQ()
 		vector<int>& dsts = pkg.dsts;
 		for(int i = 0; i < dsts.size(); i++)
 		{
-			obinstream um = recv_obinstream(dsts[i], RESPOND_CHANNEL);
+			obinstream um;
+            if(USE_RDMA){
+			 	RdmaMgr::Get().recv_obinstream(dsts[i], RESPOND_CHANNEL, um);
+			}
+			else{
+		        um = recv_obinstream(dsts[i], RESPOND_CHANNEL);
+            }
 			int num;
 			um >> num;
 			for(int i=0; i<num; i++)
@@ -446,7 +458,20 @@ void Slave<TaskT, AggregatorT>::run_to_no_task()
 		task_pipeline_.pq_push_back(signed_tasks);
 	}
 }
-
+template <class TaskT,  class AggregatorT>
+void Slave<TaskT, AggregatorT>::rdma_recv_run(int nid){
+	int ret;
+	int num_end_tag = 0;
+	while(num_end_tag < (_num_workers-1)){
+		obinstream um;
+		ibinstream im;
+		ret = RdmaMgr::Get().recv_obinstream(nid, REQUEST_CHANNEL, um);
+		int dst = set_resp(im, um);
+		if(dst < 0)
+			num_end_tag ++;
+		ret = RdmaMgr::Get().send(&im, nid, RESPOND_CHANNEL);
+	}
+}
 template <class TaskT,  class AggregatorT>
 void Slave<TaskT, AggregatorT>::recv_run()
 {
@@ -489,8 +514,12 @@ void Slave<TaskT, AggregatorT>::end_recver()
 	for(int i = 0; i< _num_workers; i++)
 	{
 		int dst = (_my_rank + i) % _num_workers; //to avoid receiver-sided bottleneck
-		if( dst != MASTER_RANK)
-			send_ibinstream(m, dst, REQUEST_CHANNEL);
+		if( dst != MASTER_RANK){
+			if(USE_RDMA)
+				RdmaMgr::Get().send(&m, i, REQUEST_CHANNEL);
+			else
+				send_ibinstream(m, dst, REQUEST_CHANNEL);
+		}
 	}
 }
 
@@ -607,9 +636,6 @@ void Slave<TaskT, AggregatorT>::run(const WorkerParams& params)
 		cout << _my_rank << "=> Error: Failed in parse input data." << endl;
 		return;
 	}
-	// TODO(mintyi): better method to decide thread number
-	init_worker_rdma(7); 
-	
 	//================ Load graph from HDFS =================
 	init_timers();
 	ResetTimer(WORKER_TIMER);
@@ -645,7 +671,15 @@ void Slave<TaskT, AggregatorT>::run(const WorkerParams& params)
 	thread sync(&Slave::context_sync, this);
 
 	//start listening thread for vertex passing
-	thread recver(&Slave::recv_run, this);
+	vector<thread> recv_ths;
+	if(USE_RDMA){
+		for(int i = 0; i < _num_workers; ++i){
+			if (i != _my_rank)
+				recv_ths.push_back(std::move(thread(&Slave::rdma_recv_run, this, i)));
+		}
+	}
+	else
+		recv_ths.push_back(std::move(thread(&Slave::recv_run, this)));
 
 	//start master-slaves task_schedule report
 	thread reporter(&Slave::report, this);
@@ -689,8 +723,29 @@ void Slave<TaskT, AggregatorT>::run(const WorkerParams& params)
 		{
 			break;
 		}
-		else
-		{
+		
+        if(USE_RDMA){
+			ibinstream stream;
+			set_steal(stream);
+			RdmaMgr::Get().send(&stream, tgt_wid, REQUEST_CHANNEL);
+			TaskVec tasks;
+			int num;
+			obinstream um;
+			RdmaMgr::Get().recv_obinstream(tgt_wid, RESPOND_CHANNEL, um);
+			um >> num;
+			for(int i=0; i<num; i++)
+			{
+				TaskT * t = new TaskT;
+				um >> *t;
+				tasks.push_back(t);
+			}
+			inc_task_num_in_memory(num);
+			vector<KTpair> signed_tasks;
+			task_sorter_.sign_and_sort_tasks(tasks, signed_tasks);
+			task_pipeline_.pq_push_back(signed_tasks);
+			run_to_no_task();
+		}
+		else{
 			//request a task from the corresponding worker
 			//and
 			//receive the task, recompute the remote vertices and do computation
@@ -742,10 +797,10 @@ void Slave<TaskT, AggregatorT>::run(const WorkerParams& params)
 	end_sync();
 
 	//join the left threads
-	recver.join();
 	reporter.join();
 	sync.join();
-
+	for(auto& t: recv_ths)
+		t.join();
 	//join the debugger threads
 	debugger.join();
 }

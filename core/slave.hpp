@@ -27,6 +27,7 @@
 #include "util/serialization.hpp"
 #include "util/slave_commun.hpp"
 #include "util/type.hpp"
+#include "util/rdma.hpp"
 
 #include "core/ref_cache.hpp"
 #include "core/task.hpp"
@@ -38,7 +39,6 @@
 using namespace std;
 
 
-extern vector<RdmaNodeInfo> _global_rdma_infos;
 template <class TaskT,  class AggregatorT = DummyAgg> //user-defined types for vertexID, adjacency-list items
 class Slave
 {
@@ -133,6 +133,8 @@ private:
 	void report_to_master(unsigned long long mem_tasks, unsigned long long disk_tasks);
 
 	void recv_run();
+
+    void rdma_recv_run(int nid);
 
 	void end_recver();
 

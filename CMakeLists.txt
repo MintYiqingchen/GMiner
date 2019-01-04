@@ -15,7 +15,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
-set(COMMON_LINK_LIBS "-lhdfs -lpthread -libverbs -lzmq") #-ljvm 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I /data/xxwang/usr/include -L /data/xxwang/usr/lib")
+set(COMMON_LINK_LIBS "-lhdfs -lpthread -libverbs -lzmq -lrdmacm") #-ljvm 
 
 add_definitions(-DUSE_HDFS2_)  #use hdfs v2.x.x by default
 set(HDFS_INCLUDE_DIR "/data/opt/hadoop-2.6.0/include/")
